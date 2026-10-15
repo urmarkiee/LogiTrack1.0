@@ -99,3 +99,5 @@ BEGIN
 END; $$;
 REVOKE ALL ON FUNCTION public.assign_shipment_accounts(text,text,text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.assign_shipment_accounts(text,text,text) TO authenticated;
+
+NOTIFY pgrst, 'reload schema';
