@@ -4,3 +4,6 @@
 
 /* Linked customer and courier dashboards */
 .mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0}.mini-stats>div{border:1px solid #e1e8ef;border-radius:15px;padding:18px;background:#f8fafc}.mini-stats strong{display:block;font-size:28px}.mini-stats small{color:#64748b}.tracking-map{height:390px;border-radius:16px;overflow:hidden;margin-top:20px;background:#e2e8f0}.shipment-info{margin:22px 0}.account-space .panel{max-width:960px;margin:auto}.public-nav nav{display:flex;gap:14px;align-items:center;flex-wrap:wrap}@media(max-width:640px){.mini-stats{grid-template-columns:1fr 1fr}.tracking-map{height:320px}}
+
+:root{--page-gutter:clamp(16px,3vw,32px)}
+.content,.shell,.account-space,.public-nav{padding-inline:var(--page-gutter)}
