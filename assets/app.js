@@ -122,9 +122,9 @@
         const pass=$('signup-password').value;
         if(pass.length<12)throw new Error('Use a password of at least 12 characters.');
         if(pass!==$('signup-confirm').value)throw new Error('Passwords do not match.');
-        const {error}=await db.auth.signUp({email,password:pass,options:{emailRedirectTo:new URL('login.html',location.href).href,data:{full_name:$('signup-name').value.trim(),requested_role:$('account-type').value}}});
+        const {error}=await db.auth.signUp({email,password:pass,options:{emailRedirectTo:new URL('login.html',location.href).href,data:{full_name:$('signup-name').value.trim(),requested_role:$('signup-role').value}}});
         if(error)throw error;
-        notify('Account request created. Confirm your email if required, then sign in. Courier and administrator access require approval.');
+        notify('Account request created. Confirm your email if required, then sign in. Admin access needs approval.');
         form.reset();
       }catch(error){notify(getError(error),true);}finally{btn.disabled=false;}
     });
@@ -140,7 +140,7 @@
     const {data:profile}=await db.from('account_profiles').select('full_name,requested_role').eq('user_id',user.id).maybeSingle();
     $('account-name').textContent=profile?.full_name||user.user_metadata?.full_name||'Customer';
     const {data:admin}=await db.from('admin_users').select('user_id').eq('user_id',user.id).maybeSingle();
-    $('account-role').textContent=admin?'Administrator':profile?.requested_role==='admin'?'Admin request pending':profile?.requested_role==='courier'?'Courier request pending':'Customer';
+    $('account-role').textContent=admin?'Administrator':profile?.requested_role==='admin'?'Admin request pending':'Customer';
     if(admin)$('admin-link').hidden=false;
     $('request-admin').hidden=Boolean(admin)||profile?.requested_role==='admin';
     $('request-admin').addEventListener('click',async()=>{
