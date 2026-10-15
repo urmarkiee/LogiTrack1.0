@@ -77,6 +77,21 @@ END; $$;
 REVOKE ALL ON FUNCTION public.report_courier_gps(uuid,double precision,double precision) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.report_courier_gps(uuid,double precision,double precision) TO authenticated;
 
+CREATE OR REPLACE FUNCTION public.deliver_courier_shipment(p_shipment_id uuid)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
+DECLARE uid uuid := (select auth.uid());
+BEGIN
+ IF uid IS NULL THEN RAISE EXCEPTION 'Sign in required'; END IF;
+ IF NOT EXISTS (SELECT 1 FROM public.courier_users WHERE user_id=uid) THEN RAISE EXCEPTION 'Courier approval required'; END IF;
+ UPDATE public.shipments
+ SET status='Delivered',latitude=null,longitude=null,gps_reported_at=null
+ WHERE id=p_shipment_id AND courier_user_id=uid
+ AND status IN ('In Transit','Out for Delivery');
+ IF NOT FOUND THEN RAISE EXCEPTION 'Not assigned to an active shipment'; END IF;
+END; $$;
+REVOKE ALL ON FUNCTION public.deliver_courier_shipment(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.deliver_courier_shipment(uuid) TO authenticated;
+
 -- Existing account assignment RPC must not assign someone who isn't approved as courier.
 CREATE OR REPLACE FUNCTION public.assign_shipment_accounts(
  p_tracking_number text,p_customer_email text,p_courier_email text

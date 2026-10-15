@@ -6,7 +6,7 @@ const isCourier=location.pathname.endsWith('/courier-dashboard.html');
 let shipments=[],map,marker,watchId=null,activeId=null,lastSent=0,inFlight=false,gpsSession=0,gpsStatusPinned=false;
 const escapeHTML=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const selector=$(isCourier?'courier-shipments':'customer-shipments');
-function draw(s){const info=$('package-summary');if(!s){info.innerHTML='<p>No shipment selected.</p>';$('gps-map').hidden=true;$('gps-age').textContent='';return;}
+function draw(s){const info=$('package-summary'),deliverButton=$('mark-delivered');if(deliverButton)deliverButton.disabled=!s||!['In Transit','Out for Delivery'].includes(s.status);if(!s){info.innerHTML='<p>No shipment selected.</p>';$('gps-map').hidden=true;$('gps-age').textContent='';return;}
  info.innerHTML=`<h2>${escapeHTML(s.item_name)}</h2><p><b>Tracking:</b> ${escapeHTML(s.tracking_number)}</p><p><b>Status:</b> ${escapeHTML(s.status)}</p><p><b>Route:</b> ${escapeHTML(s.origin)} → ${escapeHTML(s.destination)}</p><p><b>Last hub:</b> ${escapeHTML(s.location||'Not reported')}</p>`;
  const lat=s.latitude,lon=s.longitude;
  if(lat==null||lon==null||!Number.isFinite(+lat)||!Number.isFinite(+lon)){$('gps-map').hidden=true;$('gps-age').textContent='No GPS coordinate has been reported yet.';return;}
@@ -29,7 +29,16 @@ async function init(){const {data:{user},error}=await db.auth.getUser();if(error
  $('signout').addEventListener('click',async()=>{if(isCourier)stopGPS();await db.auth.signOut();location.replace('login.html');});
  selector.addEventListener('change',()=>{if(isCourier&&watchId!==null)stopGPS();draw(shipments.find(s=>s.id===selector.value));});
  if($('reload'))$('reload').addEventListener('click',refresh);
- if(isCourier){$('stop-gps').addEventListener('click',stopGPS);$('start-gps').addEventListener('click',()=>{
+ if(isCourier){$('stop-gps').addEventListener('click',stopGPS);$('mark-delivered').addEventListener('click',async()=>{
+ const selected=shipments.find(s=>s.id===selector.value),button=$('mark-delivered');
+ if(!selected||!['In Transit','Out for Delivery'].includes(selected.status))return status('Only active assigned shipments can be marked delivered.');
+ if(!confirm('Mark this shipment delivered and remove its saved GPS coordinates?'))return;
+ button.disabled=true;
+ try{
+ const {error}=await db.rpc('deliver_courier_shipment',{p_shipment_id:selected.id});if(error)throw error;
+ stopGPS();status('Shipment marked delivered. GPS coordinates cleared.');await refresh();
+ }catch(error){status(error.message);button.disabled=false;}
+ });$('start-gps').addEventListener('click',()=>{
  if(!selector.value)return status('Select an assigned shipment first.');if(watchId!==null)return;
  const selected=shipments.find(s=>s.id===selector.value);
  if(!selected||!['In Transit','Out for Delivery'].includes(selected.status))return status('GPS sharing is available only when the shipment is In Transit or Out for Delivery.');
