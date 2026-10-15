@@ -1,6 +1,6 @@
 COURIER APPROVAL UPGRADE
 1. Back up your project. This ZIP includes the existing LogiTrack project with an added courier approval feature.
-2. In Supabase SQL Editor run courier-approval-upgrade.sql AFTER your existing schema.sql, auth-upgrade.sql, customer-gps-upgrade.sql. Do not re-run initial schema files unnecessarily.
+2. In Supabase SQL Editor run courier-approval-upgrade.sql AFTER your existing schema.sql, auth-upgrade.sql, customer-gps-upgrade.sql. The updated courier migration can be rerun safely; it clears saved GPS coordinates from shipments already marked Delivered.
 3. Confirm an existing admin is registered in public.admin_users.
 4. Customers can sign in, open account.html, and click Request courier access.
 5. Admins open requests.html, which now has an Admin requests section AND a Courier access requests section. Approve or Reject.

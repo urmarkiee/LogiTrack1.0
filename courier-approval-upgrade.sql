@@ -115,4 +115,21 @@ END; $$;
 REVOKE ALL ON FUNCTION public.assign_shipment_accounts(text,text,text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.assign_shipment_accounts(text,text,text) TO authenticated;
 
+CREATE OR REPLACE FUNCTION public.clear_delivered_shipment_gps()
+RETURNS trigger LANGUAGE plpgsql SET search_path = '' AS $$
+BEGIN
+ IF NEW.status='Delivered' THEN
+  NEW.latitude=null;
+  NEW.longitude=null;
+  NEW.gps_reported_at=null;
+ END IF;
+ RETURN NEW;
+END; $$;
+DROP TRIGGER IF EXISTS shipments_clear_gps_on_delivery ON public.shipments;
+CREATE TRIGGER shipments_clear_gps_on_delivery
+BEFORE INSERT OR UPDATE ON public.shipments
+FOR EACH ROW EXECUTE FUNCTION public.clear_delivered_shipment_gps();
+UPDATE public.shipments SET latitude=null,longitude=null,gps_reported_at=null
+WHERE status='Delivered' AND (latitude IS NOT NULL OR longitude IS NOT NULL OR gps_reported_at IS NOT NULL);
+
 NOTIFY pgrst, 'reload schema';

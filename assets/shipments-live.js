@@ -9,6 +9,7 @@ const selector=$(isCourier?'courier-shipments':'customer-shipments');
 function draw(s){const info=$('package-summary'),deliverButton=$('mark-delivered');if(deliverButton)deliverButton.disabled=!s||!['In Transit','Out for Delivery'].includes(s.status);if(!s){info.innerHTML='<p>No shipment selected.</p>';$('gps-map').hidden=true;$('gps-age').textContent='';return;}
  info.innerHTML=`<h2>${escapeHTML(s.item_name)}</h2><p><b>Tracking:</b> ${escapeHTML(s.tracking_number)}</p><p><b>Status:</b> ${escapeHTML(s.status)}</p><p><b>Route:</b> ${escapeHTML(s.origin)} → ${escapeHTML(s.destination)}</p><p><b>Last hub:</b> ${escapeHTML(s.location||'Not reported')}</p>`;
  const lat=s.latitude,lon=s.longitude;
+ if(s.status==='Delivered'){$('gps-map').hidden=true;$('gps-age').textContent='GPS sharing ended when this shipment was delivered.';return;}
  if(lat==null||lon==null||!Number.isFinite(+lat)||!Number.isFinite(+lon)){$('gps-map').hidden=true;$('gps-age').textContent='No GPS coordinate has been reported yet.';return;}
  $('gps-map').hidden=false;
  if(!map){map=L.map('gps-map').setView([+lat,+lon],14);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors'}).addTo(map);marker=L.marker([+lat,+lon]).addTo(map);}else{marker.setLatLng([+lat,+lon]);map.setView([+lat,+lon],14);}
