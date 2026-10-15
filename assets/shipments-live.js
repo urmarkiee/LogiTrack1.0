@@ -16,21 +16,23 @@ function draw(s){const info=$('package-summary');if(!s){info.innerHTML='<p>No sh
  $('gps-age').textContent='Last GPS report: '+(s.gps_reported_at?new Date(s.gps_reported_at).toLocaleString():'No GPS timestamp (manually entered coordinates)')+'. This is the last reported location, not guaranteed live.';
 }
 async function refresh(){const old=selector.value;const {data,error}=await db.from('shipments').select('id,tracking_number,item_name,origin,destination,status,location,latitude,longitude,gps_reported_at,updated_at,customer_user_id,courier_user_id').order('updated_at',{ascending:false}).limit(200);
- if(error){status(error.message);return;}shipments=(data||[]).filter(s=>!isCourier||['In Transit','Out for Delivery'].includes(s.status));
+ if(error){status(error.message);return;}shipments=data||[];
  const frag=document.createDocumentFragment();const empty=document.createElement('option');empty.value='';empty.textContent=shipments.length?'Choose a shipment':'No linked shipments';frag.appendChild(empty);
  for(const s of shipments){let opt=document.createElement('option');opt.value=s.id;opt.textContent=`${s.tracking_number} — ${s.item_name}`;frag.appendChild(opt);}selector.replaceChildren(frag);
  selector.value=shipments.some(s=>s.id===old)?old:(shipments[0]?.id||'');
  if(isCourier&&watchId!==null&&selector.value!==activeId)stopGPS();
  draw(shipments.find(s=>s.id===selector.value));
  if(!isCourier){$('count-total').textContent=shipments.length;$('count-active').textContent=shipments.filter(s=>['In Transit','Out for Delivery'].includes(s.status)).length;$('count-done').textContent=shipments.filter(s=>s.status==='Delivered').length;}
- status(shipments.length?`Showing ${shipments.length} assigned shipment(s). Refreshes every 8 seconds.`:'No shipments linked to your account. Ask the admin to assign your email to an order.');}
+ status(shipments.length?`Showing ${shipments.length} assigned shipment(s). GPS sharing is available for shipments In Transit or Out for Delivery. Refreshes every 8 seconds.`:'No shipments linked to your account. Ask the admin to assign your email to an order.');}
 function stopGPS(){if(watchId!==null)navigator.geolocation.clearWatch(watchId);watchId=null;activeId=null;$('start-gps').disabled=false;$('stop-gps').disabled=true;status('GPS sharing stopped.');}
 async function init(){const {data:{user},error}=await db.auth.getUser();if(error||!user){location.replace('login.html');return;}
  $('signout').addEventListener('click',async()=>{if(isCourier)stopGPS();await db.auth.signOut();location.replace('login.html');});
  selector.addEventListener('change',()=>{if(isCourier&&watchId!==null)stopGPS();draw(shipments.find(s=>s.id===selector.value));});
  if($('reload'))$('reload').addEventListener('click',refresh);
  if(isCourier){$('stop-gps').addEventListener('click',stopGPS);$('start-gps').addEventListener('click',()=>{
- if(!selector.value)return status('Select an assigned active shipment first.');if(watchId!==null)return;
+ if(!selector.value)return status('Select an assigned shipment first.');if(watchId!==null)return;
+ const selected=shipments.find(s=>s.id===selector.value);
+ if(!selected||!['In Transit','Out for Delivery'].includes(selected.status))return status('GPS sharing is available only when the shipment is In Transit or Out for Delivery.');
  if(!navigator.geolocation)return status('This browser has no geolocation support.');
  activeId=selector.value;lastSent=0;$('start-gps').disabled=true;$('stop-gps').disabled=false;status('Waiting for GPS permission…');
  watchId=navigator.geolocation.watchPosition(async p=>{
