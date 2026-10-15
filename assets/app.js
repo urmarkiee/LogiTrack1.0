@@ -50,91 +50,28 @@
     if($('logout'))$('logout').addEventListener('click',async()=>{await db.auth.signOut();location.href='login.html';});
     return true;
   }
-  async function userLandingPage(user){
-    const {data:admin,error}=await db.from('admin_users').select('user_id').eq('user_id',user.id).maybeSingle();
-    return !error && admin ? 'dashboard.html' : 'account.html';
-  }
-  async function startGoogleSignIn(button){
-    button.disabled=true;
-    try {
-      const {error}=await db.auth.signInWithOAuth({provider:'google',options:{redirectTo:new URL('account.html',location.href).href}});
-      if(error)throw error;
-    } catch(e) {notify(getError(e),true);button.disabled=false;}
-  }
   async function initLogin(){
-    try {
-      const {data:{user},error}=await db.auth.getUser();
-      if(!error && user){location.href=await userLandingPage(user);return;}
-    } catch (err) {
-      // Ignore transient auth fetch errors and continue to show the login form.
+    const google=$('google-login');
+    if(google)google.addEventListener('click',async()=>{
+      google.disabled=true;
+      const {error}=await db.auth.signInWithOAuth({provider:'google', options:{redirectTo:new URL('login.html',location.href).href}});
+      if(error){notify(getError(error),true);google.disabled=false;}
+    });
+    // Supabase restores a session after the Google redirect.
+    const params=new URLSearchParams(location.search);
+    if(params.has('code') || location.hash.includes('access_token')){
+      const {data:{user}}=await db.auth.getUser();
+      if(user){
+        const {data:admin}=await db.from('admin_users').select('user_id').eq('user_id',user.id).maybeSingle();
+        location.replace(admin?'dashboard.html':'account.html');return;
+      }
     }
     if(new URLSearchParams(location.search).has('denied'))notify('Account not approved as admin. Ask the project owner to add your user ID in admin_users.',true);
     $('login-form').addEventListener('submit',async e=>{
       e.preventDefault();const button=$('login-button');button.disabled=true;
-      try {const {data,error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;location.href=await userLandingPage(data.user);}
+      try {const {error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error; const {data:{user}}=await db.auth.getUser(); if(!user)throw new Error('Unable to verify signed-in user'); const {data:admin, error:roleError}=await db.from('admin_users').select('user_id').eq('user_id',user.id).maybeSingle(); if(roleError)throw roleError; location.href=admin?'dashboard.html':'account.html';}
       catch(err){notify(getError(err),true);button.disabled=false;}
     });
-    $('google-login')?.addEventListener('click',e=>startGoogleSignIn(e.currentTarget));
-  }
-  function initSignup(){
-    $('signup-form').addEventListener('submit',async e=>{
-      e.preventDefault();
-      const button=$('signup-button');button.disabled=true;
-      const password=$('signup-password').value;
-      if(password!==$('signup-confirm').value){notify('Passwords do not match.',true);button.disabled=false;return;}
-      try {
-        const {data,error}=await db.auth.signUp({
-          email:$('signup-email').value.trim(),
-          password,
-          options:{data:{full_name:$('signup-name').value.trim(),requested_role:$('signup-role').value},emailRedirectTo:new URL('login.html',location.href).href}
-        });
-        if(error)throw error;
-        if(data.session)location.href='account.html';
-        else notify('Account created. Check your email to confirm your address before signing in.');
-      } catch(err){notify(getError(err),true);}
-      finally{button.disabled=false;}
-    });
-    $('signup-google')?.addEventListener('click',e=>startGoogleSignIn(e.currentTarget));
-  }
-  async function initAccount(){
-    const {data:{user},error}=await db.auth.getUser();
-    if(error || !user){location.href='login.html';return;}
-    $('account-email').textContent=user.email||'—';
-    const {data:profile,error:profileError}=await db.from('account_profiles').select('full_name,requested_role').eq('user_id',user.id).maybeSingle();
-    const {data:admin,error:adminError}=await db.from('admin_users').select('user_id').eq('user_id',user.id).maybeSingle();
-    if(profileError || adminError){notify(getError(profileError||adminError),true);return;}
-    $('account-name').textContent=profile?.full_name||user.user_metadata?.full_name||user.email||'Customer';
-    const isAdmin=!!admin,hasRequest=profile?.requested_role==='admin';
-    $('account-role').textContent=isAdmin?'Administrator':hasRequest?'Administrator request pending':'Customer';
-    $('admin-link').hidden=!isAdmin;
-    $('request-admin').hidden=isAdmin||hasRequest;
-    $('request-admin').addEventListener('click',async e=>{
-      const button=e.currentTarget;button.disabled=true;
-      try {
-        const {error}=await db.rpc('request_admin_access');if(error)throw error;
-        $('account-role').textContent='Administrator request pending';button.hidden=true;notify('Your administrator access request was submitted.');
-      } catch(err){notify(getError(err),true);button.disabled=false;}
-    });
-    $('account-logout').addEventListener('click',async()=>{await db.auth.signOut();location.href='login.html';});
-  }
-  async function initRequests(){
-    if(!await requireAdmin())return;
-    const body=$('requests-body');
-    async function reload(){
-      try {
-        const {data,error}=await db.rpc('list_admin_requests');if(error)throw error;
-        body.innerHTML=(data||[]).map(r=>`<tr><td>${esc(r.full_name||'—')}</td><td>${esc(r.email||'—')}</td><td>${esc(date(r.created_at))}</td><td><button class="outline-button" type="button" data-approve="${esc(r.user_id)}">Approve</button></td></tr>`).join('')||'<tr><td colspan="4">No pending administrator requests.</td></tr>';
-      } catch(e){notify(getError(e),true);body.innerHTML='<tr><td colspan="4">Could not load requests.</td></tr>';}
-    }
-    body.addEventListener('click',async e=>{
-      const button=e.target.closest('[data-approve]');if(!button)return;
-      button.disabled=true;
-      try {
-        const {error}=await db.rpc('approve_admin_request',{p_user_id:button.dataset.approve});if(error)throw error;
-        notify('Administrator access approved.');await reload();
-      } catch(err){notify(getError(err),true);button.disabled=false;}
-    });
-    await reload();
   }
   async function getShipments(){const {data,error}=await db.from('shipments').select('*').order('updated_at',{ascending:false}).limit(500);if(error)throw error;return data||[];}
   async function initDashboard(){
@@ -176,5 +113,61 @@
     });
     await reload();
   }
-  if(page==='customer')initCustomer();if(page==='login')initLogin();if(page==='signup')initSignup();if(page==='account')initAccount();if(page==='requests')initRequests();if(page==='dashboard')initDashboard();if(page==='admin')initAdmin();
+  async function initSignup(){
+    const form=$('signup-form');if(!form)return;
+    form.addEventListener('submit',async e=>{
+      e.preventDefault();const btn=$('signup-button');btn.disabled=true;
+      try{
+        const email=$('signup-email').value.trim();
+        const pass=$('signup-password').value;
+        if(pass.length<12)throw new Error('Use a password of at least 12 characters.');
+        if(pass!==$('signup-confirm').value)throw new Error('Passwords do not match.');
+        const {error}=await db.auth.signUp({email,password:pass,options:{emailRedirectTo:new URL('login.html',location.href).href,data:{full_name:$('signup-name').value.trim(),requested_role:$('account-type').value}}});
+        if(error)throw error;
+        notify('Account request created. Confirm your email if required, then sign in. Courier and administrator access require approval.');
+        form.reset();
+      }catch(error){notify(getError(error),true);}finally{btn.disabled=false;}
+    });
+    const google=$('signup-google');if(google)google.addEventListener('click',async()=>{
+      const {error}=await db.auth.signInWithOAuth({provider:'google',options:{redirectTo:new URL('login.html',location.href).href}});
+      if(error)notify(getError(error),true);
+    });
+  }
+  async function initAccount(){
+    const {data:{user},error}=await db.auth.getUser();
+    if(error||!user){location.replace('login.html');return;}
+    $('account-email').textContent=user.email || '(email unavailable)';
+    const {data:profile}=await db.from('account_profiles').select('full_name,requested_role').eq('user_id',user.id).maybeSingle();
+    $('account-name').textContent=profile?.full_name||user.user_metadata?.full_name||'Customer';
+    const {data:admin}=await db.from('admin_users').select('user_id').eq('user_id',user.id).maybeSingle();
+    $('account-role').textContent=admin?'Administrator':profile?.requested_role==='admin'?'Admin request pending':profile?.requested_role==='courier'?'Courier request pending':'Customer';
+    if(admin)$('admin-link').hidden=false;
+    $('request-admin').hidden=Boolean(admin)||profile?.requested_role==='admin';
+    $('request-admin').addEventListener('click',async()=>{
+      const {error}=await db.rpc('request_admin_access');
+      if(error)notify(getError(error),true);else{$('account-role').textContent='Admin request pending';$('request-admin').hidden=true;notify('Request submitted for administrator review.');}
+    });
+    $('account-logout').addEventListener('click',async()=>{await db.auth.signOut();location.replace('index.html');});
+  }
+  async function initRequests(){
+    if(!await requireAdmin())return;
+    const body=$('requests-body');
+    async function reload(){
+      const {data,error}=await db.rpc('list_admin_requests');
+      if(error){notify(getError(error),true);return;}
+      body.innerHTML=(data||[]).map(u=>`<tr><td>${esc(u.full_name||'—')}</td><td>${esc(u.email||'—')}</td><td>${esc(date(u.created_at))}</td><td><button class="primary-button approve-button" data-id="${esc(u.user_id)}" type="button">Approve admin</button></td></tr>`).join('') || '<tr><td colspan="4">No pending requests.</td></tr>';
+    }
+    body.addEventListener('click',async e=>{
+      const btn=e.target.closest('.approve-button');if(!btn)return;
+      if(!confirm('Give this account full administrator access?'))return;
+      btn.disabled=true;
+      const {error}=await db.rpc('approve_admin_request',{p_user_id:btn.dataset.id});
+      if(error){notify(getError(error),true);btn.disabled=false;}else{notify('Administrator approved.');await reload();}
+    });
+    await reload();
+  }
+  if(page==='signup')initSignup();
+  if(page==='account')initAccount();
+  if(page==='requests')initRequests();
+  if(page==='customer')initCustomer();if(page==='login')initLogin();if(page==='dashboard')initDashboard();if(page==='admin')initAdmin();
 })();

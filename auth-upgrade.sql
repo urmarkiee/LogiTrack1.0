@@ -3,9 +3,12 @@
 CREATE TABLE IF NOT EXISTS public.account_profiles (
   user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name text NOT NULL DEFAULT '',
-  requested_role text NOT NULL DEFAULT 'customer' CHECK (requested_role IN ('customer','admin')),
+  requested_role text NOT NULL DEFAULT 'customer' CHECK (requested_role IN ('customer','courier','admin')),
   created_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.account_profiles DROP CONSTRAINT IF EXISTS account_profiles_requested_role_check;
+ALTER TABLE public.account_profiles ADD CONSTRAINT account_profiles_requested_role_check
+  CHECK (requested_role IN ('customer','courier','admin'));
 ALTER TABLE public.account_profiles ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS account_select_own ON public.account_profiles;
 CREATE POLICY account_select_own ON public.account_profiles FOR SELECT TO authenticated USING (user_id = (select auth.uid()));
@@ -15,7 +18,7 @@ RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 BEGIN
   INSERT INTO public.account_profiles(user_id,full_name,requested_role)
   VALUES (new.id, left(coalesce(new.raw_user_meta_data->>'full_name',''),100),
-    CASE WHEN new.raw_user_meta_data->>'requested_role'='admin' THEN 'admin' ELSE 'customer' END)
+    CASE WHEN new.raw_user_meta_data->>'requested_role' IN ('courier','admin') THEN new.raw_user_meta_data->>'requested_role' ELSE 'customer' END)
   ON CONFLICT (user_id) DO NOTHING;
   RETURN new;
 END;
@@ -27,6 +30,11 @@ FOR EACH ROW EXECUTE FUNCTION public.create_account_profile();
 INSERT INTO public.account_profiles(user_id,full_name,requested_role)
 SELECT id, left(coalesce(raw_user_meta_data->>'full_name',''),100), 'customer'
 FROM auth.users ON CONFLICT(user_id) DO NOTHING;
+UPDATE public.account_profiles AS profile
+SET requested_role = users.raw_user_meta_data->>'requested_role'
+FROM auth.users AS users
+WHERE profile.user_id = users.id
+  AND users.raw_user_meta_data->>'requested_role' IN ('courier','admin');
 
 -- A logged-in user can request admin approval, but cannot approve themselves.
 CREATE OR REPLACE FUNCTION public.request_admin_access()
