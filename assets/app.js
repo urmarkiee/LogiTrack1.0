@@ -139,8 +139,13 @@
     $('account-email').textContent=user.email || '(email unavailable)';
     const {data:profile}=await db.from('account_profiles').select('full_name,requested_role').eq('user_id',user.id).maybeSingle();
     $('account-name').textContent=profile?.full_name||user.user_metadata?.full_name||'Customer';
-    const {data:admin}=await db.from('admin_users').select('user_id').eq('user_id',user.id).maybeSingle();
-    $('account-role').textContent=admin?'Administrator':profile?.requested_role==='admin'?'Admin request pending':'Customer';
+    const [{data:admin,error:adminError},{data:courier,error:courierError},{data:courierRequest,error:requestError}]=await Promise.all([
+      db.from('admin_users').select('user_id').eq('user_id',user.id).maybeSingle(),
+      db.from('courier_users').select('user_id').eq('user_id',user.id).maybeSingle(),
+      db.from('courier_requests').select('status').eq('user_id',user.id).maybeSingle()
+    ]);
+    if(adminError||courierError||requestError){$('account-role').textContent='Role status unavailable';notify(getError(adminError||courierError||requestError),true);return;}
+    $('account-role').textContent=admin?'Administrator':courier?'Courier':courierRequest?.status==='pending'?'Courier request pending':profile?.requested_role==='admin'?'Admin request pending':'Customer';
     if(admin)$('admin-link').hidden=false;
     $('request-admin').hidden=Boolean(admin)||profile?.requested_role==='admin';
     $('request-admin').addEventListener('click',async()=>{
