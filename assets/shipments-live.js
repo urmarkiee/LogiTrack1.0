@@ -3,7 +3,7 @@ const cfg=window.APP_CONFIG,$=id=>document.getElementById(id),status=t=>$('live-
 if(!cfg?.url||!cfg?.key||cfg.url.includes('YOUR-PROJECT')){status('Add your Supabase Project URL in assets/config.js');return;}
 const db=window.supabase.createClient(cfg.url,cfg.key);
 const isCourier=location.pathname.endsWith('/courier-dashboard.html');
-let shipments=[],map,marker,watchId=null,activeId=null,lastSent=0,inFlight=false;
+let shipments=[],map,marker,watchId=null,activeId=null,lastSent=0,inFlight=false,gpsSession=0,gpsStatusPinned=false;
 const escapeHTML=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const selector=$(isCourier?'courier-shipments':'customer-shipments');
 function draw(s){const info=$('package-summary');if(!s){info.innerHTML='<p>No shipment selected.</p>';$('gps-map').hidden=true;$('gps-age').textContent='';return;}
@@ -23,8 +23,8 @@ async function refresh(){const old=selector.value;const {data,error}=await db.fr
  if(isCourier&&watchId!==null&&selector.value!==activeId)stopGPS();
  draw(shipments.find(s=>s.id===selector.value));
  if(!isCourier){$('count-total').textContent=shipments.length;$('count-active').textContent=shipments.filter(s=>['In Transit','Out for Delivery'].includes(s.status)).length;$('count-done').textContent=shipments.filter(s=>s.status==='Delivered').length;}
- status(shipments.length?`Showing ${shipments.length} assigned shipment(s). GPS sharing is available for shipments In Transit or Out for Delivery. Refreshes every 8 seconds.`:'No shipments linked to your account. Ask the admin to assign your email to an order.');}
-function stopGPS(){if(watchId!==null)navigator.geolocation.clearWatch(watchId);watchId=null;activeId=null;$('start-gps').disabled=false;$('stop-gps').disabled=true;status('GPS sharing stopped.');}
+ if(!isCourier||!gpsStatusPinned)status(shipments.length?`Showing ${shipments.length} assigned shipment(s). GPS sharing is available for shipments In Transit or Out for Delivery. Refreshes every 8 seconds.`:'No shipments linked to your account. Ask the admin to assign your email to an order.');}
+function stopGPS(){gpsSession++;if(watchId!==null)navigator.geolocation.clearWatch(watchId);watchId=null;activeId=null;gpsStatusPinned=true;$('start-gps').disabled=false;$('stop-gps').disabled=true;status('GPS sharing stopped.');}
 async function init(){const {data:{user},error}=await db.auth.getUser();if(error||!user){location.replace('login.html');return;}
  $('signout').addEventListener('click',async()=>{if(isCourier)stopGPS();await db.auth.signOut();location.replace('login.html');});
  selector.addEventListener('change',()=>{if(isCourier&&watchId!==null)stopGPS();draw(shipments.find(s=>s.id===selector.value));});
@@ -34,12 +34,14 @@ async function init(){const {data:{user},error}=await db.auth.getUser();if(error
  const selected=shipments.find(s=>s.id===selector.value);
  if(!selected||!['In Transit','Out for Delivery'].includes(selected.status))return status('GPS sharing is available only when the shipment is In Transit or Out for Delivery.');
  if(!navigator.geolocation)return status('This browser has no geolocation support.');
- activeId=selector.value;lastSent=0;$('start-gps').disabled=true;$('stop-gps').disabled=false;status('Waiting for GPS permission…');
+ activeId=selector.value;const session=++gpsSession,shipmentId=activeId;lastSent=0;gpsStatusPinned=true;$('start-gps').disabled=true;$('stop-gps').disabled=false;status('Waiting for GPS permission…');
  watchId=navigator.geolocation.watchPosition(async p=>{
+ if(session!==gpsSession||watchId===null)return;
  if(inFlight||Date.now()-lastSent<4000)return;inFlight=true;lastSent=Date.now();
- const {error}=await db.rpc('report_courier_gps',{p_shipment_id:activeId,p_latitude:p.coords.latitude,p_longitude:p.coords.longitude});inFlight=false;
+ const {error}=await db.rpc('report_courier_gps',{p_shipment_id:shipmentId,p_latitude:p.coords.latitude,p_longitude:p.coords.longitude});inFlight=false;
+ if(session!==gpsSession)return;
  if(error){status('GPS update failed: '+error.message);stopGPS();return;}status('GPS shared at '+new Date().toLocaleTimeString()+' (accuracy approx. '+Math.round(p.coords.accuracy)+' m).');await refresh();
- },err=>{stopGPS();status('GPS unavailable: '+err.message);},{enableHighAccuracy:true,maximumAge:2000,timeout:18000});
+ },err=>{if(session!==gpsSession)return;stopGPS();status('GPS unavailable: '+err.message);},{enableHighAccuracy:true,maximumAge:2000,timeout:18000});
  });window.addEventListener('pagehide',stopGPS);}
  await refresh();setInterval(refresh,8000);
 }
