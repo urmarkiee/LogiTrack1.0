@@ -1,1 +1,85 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Account — LogiTrack</title><link rel="stylesheet" href="assets/style.css"></head><body data-page="account" class="customer-page"><header class="public-header"><div class="public-nav"><a class="brand" href="index.html"><span class="brand-icon">↗</span><span>logi<span class="brand-accent">track</span></span></a><nav><a href="index.html">Track a package</a><a href="account.html">My account</a></nav></div></header><main class="shell account-space"><section class="panel"><span class="eyebrow">MY ACCOUNT</span><h1>Welcome, <span id="account-name">Customer</span></h1><p><strong>Email:</strong> <span id="account-email">Loading…</span></p><p><strong>Account access:</strong> <span id="account-role">Checking…</span></p><div id="message" role="status"></div><div class="account-actions"><a href="customer-dashboard.html" class="primary-button">My deliveries →</a><a href="courier-dashboard.html" class="outline-button">Courier GPS →</a><a href="index.html" class="outline-button">Track a number</a><a href="dashboard.html" class="outline-button" id="admin-link" hidden>Open admin dashboard</a><button id="request-admin" class="outline-button" type="button" hidden>Request admin access</button><button id="request-courier" class="outline-button" type="button" hidden>Request courier access</button><span id="courier-request-state" class="muted"></span><button id="account-logout" class="outline-button" type="button">Sign out</button></div><p class="muted">Package tracking is available by tracking number. Creating an account does not automatically link shipments to your email.</p></section></main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="assets/config.js"></script><script src="assets/app.js"></script><script src="assets/courier-approval.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>My Account — LogiTrack</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="account" class="customer-page account-page">
+  <header class="public-header dashboard-header">
+    <div class="public-nav dashboard-nav">
+      <a class="brand" href="index.html">
+        <span class="brand-icon">↗</span>
+        <span>logi<span class="brand-accent">track</span><small>SMART DELIVERY</small></span>
+      </a>
+      <nav aria-label="Main navigation">
+        <a href="index.html">Track a package</a>
+        <a href="customer-dashboard.html">My deliveries</a>
+        <a href="account.html" class="current" aria-current="page">My account</a>
+      </nav>
+    </div>
+  </header>
+  <main class="shell account-space account-profile-space">
+    <section class="panel account-profile-panel">
+      <div class="account-profile-heading">
+        <span class="account-avatar" aria-hidden="true">↗</span>
+        <div>
+          <span class="eyebrow">YOUR LOGITRACK PROFILE</span>
+          <h1>Welcome, <span id="account-name">Customer</span></h1>
+          <p>Your account details and delivery workspace, all in one place.</p>
+        </div>
+      </div>
+      <div class="account-details" aria-label="Account details">
+        <div class="account-detail">
+          <span>Email address</span>
+          <strong id="account-email">Loading…</strong>
+        </div>
+        <div class="account-detail">
+          <span>Account access</span>
+          <strong id="account-role" class="account-role-value">Checking…</strong>
+        </div>
+      </div>
+      <div id="message" class="account-message" role="status"></div>
+      <section class="account-workspace" aria-labelledby="workspace-title">
+        <div class="account-section-heading">
+          <div>
+            <h2 id="workspace-title">Your workspace</h2>
+            <p>Choose where you’d like to go next.</p>
+          </div>
+        </div>
+        <div class="account-actions account-workspace-actions">
+          <a href="customer-dashboard.html" class="primary-button">My deliveries <span aria-hidden="true">→</span></a>
+          <a href="courier-dashboard.html" class="outline-button">Courier GPS <span aria-hidden="true">→</span></a>
+          <a href="index.html" class="outline-button">Track a package <span aria-hidden="true">→</span></a>
+          <a href="dashboard.html" class="outline-button" id="admin-link" hidden>Admin dashboard <span aria-hidden="true">→</span></a>
+        </div>
+      </section>
+      <section class="account-access" aria-labelledby="access-title">
+        <div class="account-section-heading">
+          <div>
+            <h2 id="access-title">More account access</h2>
+            <p>Request additional access if you need it for your role.</p>
+          </div>
+        </div>
+        <div class="account-request-actions">
+          <button id="request-admin" class="outline-button" type="button" hidden>Request admin access</button>
+          <button id="request-courier" class="outline-button" type="button" hidden>Request courier access</button>
+          <span id="courier-request-state" class="muted"></span>
+        </div>
+      </section>
+      <div class="account-profile-footer">
+        <p class="muted">Creating an account does not automatically link shipments to your email. Ask your administrator to assign shipments to your account.</p>
+        <button id="account-logout" class="outline-button account-logout" type="button">Sign out</button>
+      </div>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/config.js"></script>
+  <script src="assets/app.js"></script>
+  <script src="assets/courier-approval.js"></script>
+</body>
+</html>
