@@ -1,15 +1,28 @@
-# LogiTrack Modern — Supabase edition
+##LogiTrack1.0 — Online Logistics Tracking and Management System
 
-Polished responsive pages: `index.html` (customer tracking), `login.html` (admin sign-in), `dashboard.html` (analytics), `admin.html` (shipment operations), `forgot-password.html` and `reset-password.html` (recovery).
+LogiTrack is a web-based logistics tracking and management system designed to help customers, couriers, and administrators monitor and manage the delivery of purchased items. It provides a centralized platform for shipment updates, delivery coordination, and visibility into the latest reported package location.
 
-## Setup
-1. Open `assets/config.js` and replace the placeholder URL with your actual Supabase Project URL. The project publishable key belongs to that same project. Do not use service_role or secret keys in browser files.
-2. Use the existing `schema.sql` **only if you have not already installed the same schema**. If your Supabase tables already work, do not run a second schema or delete any tables.
-3. Create an admin in Supabase Authentication > Users and add their UUID to `public.admin_users` with the SQL editor: `INSERT INTO public.admin_users(user_id) VALUES ('YOUR-AUTH-USER-UUID') ON CONFLICT (user_id) DO NOTHING;`.
-4. Open the folder in VS Code and launch `login.html` through Live Server, or deploy the files to static hosting (Netlify/Vercel). Avoid file:// URLs.
-5. For recovery emails, add the exact `reset-password.html` URL in Authentication > URL Configuration > Redirect URLs. Open `forgot-password.html` in your browser to initiate recovery.
+##Purpose
+LogiTrack aims to improve delivery transparency, tracking visibility, operational efficiency, and customer satisfaction by making shipment information accessible online.
 
-All existing app element IDs and Supabase calls are preserved. The visual redesign does not change authentication credentials. Admin functions require a real authorized Supabase user. Tracking displays the last coordinates reported by staff; it is not independent item GPS.
+##Main Users
+| User | Responsibilities and Features |
+| --- | --- |
+| **Customer** | Register and sign in, view assigned purchased items, check delivery status, and see the latest reported package location. |
+| **Courier / Delivery Personnel** | View assigned packages, update delivery progress, and share GPS coordinates from a device accompanying the package. Courier access requires administrator approval. |
+| **Administrator** | Manage shipment records, approve authorized personnel, assign deliveries, and monitor logistics transactions. |
 
-## Security
-The schema uses row-level security and a public tracking function which intentionally excludes customer names. For deployment, use unpredictable tracking numbers, do not publish secrets, and consider rate limiting the tracking API.
+##How LogiTrack1.0 Works
+1. Order and shipment registration: An administrator registers a purchased item and assigns a unique tracking number.
+2. Courier assignment: An approved courier is assigned to transport the package.
+3. Delivery and location updates: The courier reports shipment status and GPS coordinates to Supabase.
+4. Customer tracking: The customer views delivery status and the latest reported location on a map.
+5. Delivery completion: The shipment is marked Delivered, and the recorded delivery history remains available.
+   
+##Main Objective
+To develop a secure, accessible, and efficient online logistics tracking system that improves shipment monitoring, delivery management, and communication between customers, couriers, and administrators.
+
+##GPS Tracking Note
+The map shows the latest location reported by the courier's device, provided that device is accompanying the package. It does not independently locate a package or imply that the item contains its own GPS tracker. Updates depend on the courier's device permissions and internet connectivity.
+
+Note: GPS tracking reflects the latest location reported by the courier's device, not an independent GPS tracker inside the package.
