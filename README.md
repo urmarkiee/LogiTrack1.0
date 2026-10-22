@@ -68,7 +68,7 @@ For a complete migration preserving shipment-history timestamps and user relatio
 ### Deployment and security
 
 - Public browser code (HTML, CSS, JavaScript) and Firebase Web App configuration are visible to visitors; a public website cannot keep them secret. The Firebase Web App `apiKey` is a public identifier, not a password or service-account key. Minifying or moving it to another frontend file does not make it secret.
-- Restrict the Firebase browser API key in Google Cloud Console → **APIs & Services → Credentials** to HTTP referrers for the site. For this GitHub Pages deployment, allow `https://urmarkiee.github.io/*`; keep localhost entries only while needed for development. This limits where the key can normally be used, but does not hide it or replace backend security.
+- Restrict the Firebase browser API key in Google Cloud Console → **APIs & Services → Credentials** to HTTP referrers for the site and Firebase Auth handler. Allow `https://urmarkiee.github.io/*` and `https://logitrack-8fb2a.firebaseapp.com/*`; keep only the localhost entries actually needed for development. If the key's referrer list is full, remove an unused local entry before adding the Firebase Auth domain. This limits where the key can normally be used, but does not hide it or replace backend security.
 - In Firebase Console → **Authentication → Settings → Authorized domains**, add `urmarkiee.github.io` so sign-in works on GitHub Pages.
 - Never put service-account JSON, private keys, or other server credentials in this repository or browser code. Use a trusted backend such as Cloud Functions or Cloud Run for operations that require secrets.
 - Do not grant `admin` or `courier` by choosing a signup option. New users are customers until approved.
