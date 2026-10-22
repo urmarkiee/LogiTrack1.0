@@ -43,11 +43,6 @@
           <div class="stat"><div class="stat-head"><span>Successfully delivered</span><span class="stat-symbol green">✓</span></div><strong id="delivered">—</strong><small>Completed deliveries</small><div class="stat-line green"></div></div>
         </section>
         <section class="insight-banner"><div class="insight-icon">✦</div><div><strong>All your deliveries, one clear view.</strong><p>Monitor shipment progress, update locations, and stay ahead of every milestone.</p></div><a href="index.html">Open tracking portal <span>↗</span></a></section>
-        <section class="panel shipment-panel">
-          <div class="table-header"><div><span class="eyebrow">SHIPMENT DIRECTORY</span><h2>Recent shipments</h2><p>Browse and manage every order in your network.</p></div><button class="outline-button" id="refresh">↻   Refresh data</button></div>
-          <div class="toolbar"><label class="search-wrap"><span>⌕</span><input aria-label="Search shipments" id="search" placeholder="Search tracking ID, customer, item..."/></label><select aria-label="Filter by status" id="filter"><option value="">All statuses</option><option>Pending</option><option>In Transit</option><option>Out for Delivery</option><option>Delivered</option></select></div>
-          <div class="table-scroll"><table><thead><tr><th>TRACKING NUMBER</th><th>ITEM</th><th>CUSTOMER</th><th>DESTINATION</th><th>STATUS</th><th>LOCATION</th><th>UPDATED</th><th>ACTION</th></tr></thead><tbody id="shipment-body"><tr><td colspan="8">Loading your shipments...</td></tr></tbody></table></div>
-        </section>
         <section aria-label="Customer and courier directories" class="user-directory-grid">
           <section class="panel user-directory-panel">
             <div class="user-directory-heading"><div><span class="eyebrow">REGISTERED ACCOUNTS</span><h2>Customers <span class="directory-count" id="customer-count">—</span></h2><p>Customer accounts in your network.</p></div></div>
@@ -57,6 +52,11 @@
             <div class="user-directory-heading"><div><span class="eyebrow">APPROVED ACCOUNTS</span><h2>Couriers <span class="directory-count" id="courier-count">—</span></h2><p>Approved couriers ready for shipment assignment.</p></div></div>
             <div class="request-table-wrap"><table><thead><tr><th>NAME</th><th>EMAIL</th></tr></thead><tbody id="courier-body"><tr><td colspan="2">Loading couriers...</td></tr></tbody></table></div>
           </section>
+        </section>
+        <section class="panel shipment-panel">
+          <div class="table-header"><div><span class="eyebrow">SHIPMENT DIRECTORY</span><h2>Recent shipments</h2><p>Browse and manage every order in your network.</p></div><button class="outline-button" id="refresh">↻   Refresh data</button></div>
+          <div class="toolbar"><label class="search-wrap"><span>⌕</span><input aria-label="Search shipments" id="search" placeholder="Search tracking ID, customer, item..."/></label><select aria-label="Filter by status" id="filter"><option value="">All statuses</option><option>Pending</option><option>In Transit</option><option>Out for Delivery</option><option>Delivered</option></select></div>
+          <div class="table-scroll"><table><thead><tr><th>TRACKING NUMBER</th><th>ITEM</th><th>CUSTOMER</th><th>DESTINATION</th><th>STATUS</th><th>LOCATION</th><th>UPDATED</th><th>ACTION</th></tr></thead><tbody id="shipment-body"><tr><td colspan="8">Loading your shipments...</td></tr></tbody></table></div>
         </section>
         <footer class="app-footer">© 2026 LogiTrack <span>Secure cloud logistics platform</span></footer>
       </main>
