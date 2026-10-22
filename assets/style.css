@@ -156,3 +156,19 @@
   .courier-request-footer{align-items:stretch;flex-direction:column}
   .courier-request-footer .outline-button{width:100%;justify-content:center}
 }
+
+/* Admin user directories */
+.user-directory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:20px}
+.user-directory-panel{min-width:0;margin:0;padding:23px 24px;border:1px solid #e7edef;border-radius:16px;box-shadow:0 8px 26px rgba(20,43,54,.045)}
+.user-directory-heading{display:flex;align-items:center;justify-content:space-between;padding-bottom:17px}
+.user-directory-heading h2{display:flex;align-items:center;gap:9px;margin:5px 0;color:#1b3d48;font-size:19px}
+.user-directory-heading p{margin:0;color:#71838d;font-size:12px}
+.directory-count{display:inline-grid;min-width:25px;height:25px;place-items:center;padding:0 7px;border-radius:20px;background:#eaf6f5;color:#087e85;font-family:"DM Sans",sans-serif;font-size:12px;letter-spacing:0}
+.user-directory-panel .request-table-wrap table{width:100%;min-width:420px}
+.user-directory-panel .request-table-wrap td{overflow-wrap:anywhere}
+@media(max-width:900px){
+  .user-directory-grid{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+  .user-directory-panel{padding:19px 16px}
+}

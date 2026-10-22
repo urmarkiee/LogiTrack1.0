@@ -7,7 +7,7 @@ A responsive logistics shipment tracker and dashboard, migrated from Supabase to
 - Public package tracking using a long, random tracking code (`PKG-...`)
 - Firebase email/password authentication, password recovery, and Google sign-in
 - Separate customer dashboard and courier dashboard
-- Admin dashboard with live shipment updates, creation/editing, and account assignments
+- Admin dashboard with live shipment updates, creation/editing, account assignments, and customer/approved-courier directories
 - Admin-approved courier and admin access requests
 - Authorized courier GPS sharing via the browser Geolocation API (explicit Start/Stop buttons)
 - Live customer maps with **the last position reported from the courier's device**

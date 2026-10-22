@@ -183,7 +183,7 @@ async function initAccount(){
 // Admin dashboard: real-time Firestore snapshot updates.
 async function initDashboard(){
   const user=await guard('admin');if(!user)return;
-  let shipments=[];
+  let shipments=[],profiles=new Map(),roles=new Map(),profilesReady=false,rolesReady=false;
   function render(){
     const q=($('search')?.value||'').trim().toLowerCase(),f=$('filter')?.value||'';
     const rows=shipments.filter(s=>(!f||s.status===f) && [s.trackingNumber,s.itemName,s.customerName,s.destination].some(v=>String(v??'').toLowerCase().includes(q)));
@@ -193,10 +193,41 @@ async function initDashboard(){
     $('transit').textContent=shipments.filter(s=>['In Transit','Out for Delivery'].includes(s.status)).length;
     $('delivered').textContent=shipments.filter(s=>s.status==='Delivered').length;
   }
-  const unsub=onSnapshot(col('shipments'),snap=>{shipments=snap.docs.map(d=>({id:d.id,...d.data()}));shipments.sort((a,b)=>(b.updatedAt?.toMillis?.()||0)-(a.updatedAt?.toMillis?.()||0));render();},e=>notify(errors(e),true));
+  function renderDirectory(role,bodyId,countId){
+    if(!profilesReady||!rolesReady)return;
+    const accounts=[...roles.entries()]
+      .filter(([,data])=>data.role===role)
+      .map(([uid])=>({uid,...(profiles.get(uid)||{})}))
+      .sort((a,b)=>(a.displayName||a.email||'').localeCompare(b.displayName||b.email||''));
+    $(countId).textContent=accounts.length;
+    $(bodyId).innerHTML=accounts.map(account=>`<tr><td>${escapeHTML(account.displayName||'Unnamed user')}</td><td>${escapeHTML(account.email||'—')}</td></tr>`).join('')||`<tr><td colspan="2">No ${role==='courier'?'approved couriers':'customers'} found.</td></tr>`;
+  }
+  function renderDirectories(){
+    renderDirectory('customer','customer-body','customer-count');
+    renderDirectory('courier','courier-body','courier-count');
+  }
+  const unsubShipments=onSnapshot(col('shipments'),snap=>{shipments=snap.docs.map(d=>({id:d.id,...d.data()}));shipments.sort((a,b)=>(b.updatedAt?.toMillis?.()||0)-(a.updatedAt?.toMillis?.()||0));render();},e=>notify(errors(e),true));
+  const unsubProfiles=onSnapshot(col('users'),snap=>{
+    profiles=new Map(snap.docs.map(d=>[d.id,d.data()]));
+    profilesReady=true;
+    renderDirectories();
+  },e=>{
+    $('customer-body').innerHTML='<tr><td colspan="2">Unable to load account profiles.</td></tr>';
+    $('courier-body').innerHTML='<tr><td colspan="2">Unable to load account profiles.</td></tr>';
+    notify(errors(e),true);
+  });
+  const unsubRoles=onSnapshot(col('roles'),snap=>{
+    roles=new Map(snap.docs.map(d=>[d.id,d.data()]));
+    rolesReady=true;
+    renderDirectories();
+  },e=>{
+    $('customer-body').innerHTML='<tr><td colspan="2">Unable to load account roles.</td></tr>';
+    $('courier-body').innerHTML='<tr><td colspan="2">Unable to load account roles.</td></tr>';
+    notify(errors(e),true);
+  });
   $('search')?.addEventListener('input',render);$('filter')?.addEventListener('change',render);
   $('refresh')?.addEventListener('click',render);
-  window.addEventListener('pagehide',unsub);
+  window.addEventListener('pagehide',()=>{unsubShipments();unsubProfiles();unsubRoles();});
 }
 
 // Admin manages shipment creation, updates, and account assignment.
