@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Admin Requests — LogiTrack</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="assets/style.css" rel="stylesheet"/>
+</head>
+<body class="admin-page requests-page" data-page="requests">
+<div class="app-shell">
+<aside class="sidebar">
+<a class="brand" href="index.html">
+<span class="brand-icon">↗</span>
+<span>logi<span class="brand-accent">track</span><small>SMART DELIVERY</small></span>
+</a>
+<div class="side-caption">WORKSPACE</div>
+<nav aria-label="Admin workspace" class="side-nav">
+<a class="side-link" href="dashboard.html"><span class="nav-icon">▦</span>Overview<span class="nav-chevron">›</span></a>
+<a class="side-link" href="admin.html"><span class="nav-icon">▤</span>Shipments<span class="nav-chevron">›</span></a>
+<a aria-current="page" class="side-link active" href="requests.html"><span class="nav-icon">♙</span>Access requests<span class="nav-chevron">›</span></a>
+<a class="side-link" href="index.html"><span class="nav-icon">⌖</span>Tracking portal<span class="nav-chevron">›</span></a>
+</nav>
+<div class="side-bottom">
+<div class="side-help">
+<span class="side-help-icon">✦</span>
+<b>All systems connected</b>
+<p>Your shipping workspace is powered by Firebase.</p>
+<span class="online-dot"></span>
+<small>Cloud database</small>
+</div>
+<button class="logout" id="logout" type="button">↪   Sign out</button>
+</div>
+</aside>
+<div class="app-main">
+<header class="topbar">
+<div class="breadcrumbs">Workspace <span>/</span> <strong>Access requests</strong></div>
+<div class="top-actions">
+<span class="live-tag"><i></i> Cloud workspace</span>
+<span class="avatar">A</span>
+<span class="account-name" id="user-email">Admin</span>
+</div>
+</header>
+<main class="content requests-content">
+<div class="page-title-row requests-page-title">
+<div>
+<span class="eyebrow">ACCOUNT SECURITY</span>
+<h1>Access requests</h1>
+<p>Review role requests and approve access for trusted team members.</p>
+</div>
+</div>
+<div class="requests-message" id="message" role="status"></div>
+<section aria-labelledby="admin-requests-title" class="panel request-panel">
+<div class="request-panel-heading">
+<span aria-hidden="true" class="request-panel-icon">♙</span>
+<div>
+<span class="eyebrow">ELEVATED ACCESS</span>
+<h2 id="admin-requests-title">Administrator requests</h2>
+<p>Confirm each request before granting full administrator access.</p>
+</div>
+</div>
+<div class="table-wrap request-table-wrap">
+<table>
+<thead><tr><th>Name</th><th>Email</th><th>Requested</th><th>Action</th></tr></thead>
+<tbody id="requests-body"><tr><td colspan="4">Loading administrator requests…</td></tr></tbody>
+</table>
+</div>
+</section>
+<section aria-labelledby="courier-requests-title" class="panel request-panel courier-request-panel">
+<div class="request-panel-heading">
+<span aria-hidden="true" class="request-panel-icon courier-request-icon">⌖</span>
+<div>
+<span class="eyebrow">DELIVERY TEAM</span>
+<h2 id="courier-requests-title">Courier access requests</h2>
+<p>Only approved couriers can report GPS updates for assigned shipments.</p>
+</div>
+</div>
+<div class="table-wrap request-table-wrap">
+<table>
+<thead><tr><th>Name</th><th>Email</th><th>Requested</th><th>Action</th></tr></thead>
+<tbody id="courier-requests-body"><tr><td colspan="4">Loading courier requests…</td></tr></tbody>
+</table>
+</div>
+<div class="courier-request-footer">
+<p id="courier-message" role="status"></p>
+<button class="outline-button" id="courier-refresh" type="button">Refresh requests</button>
+</div>
+</section>
+<footer class="app-footer">© 2026 LogiTrack <span>Every shipment counts.</span></footer>
+</main>
+</div>
+</div>
+
+
+
+
+<script src="assets/config.js"></script><script src="assets/firebase-app.js" type="module"></script></body>
+</html>

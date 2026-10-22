@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Courier Dashboard • LogiTrack</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="assets/style.css" rel="stylesheet"/>
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+</head>
+<body class="customer-page dashboard-page">
+<header class="public-header dashboard-header">
+<div class="public-nav dashboard-nav">
+<a class="brand" href="index.html">
+<span class="brand-icon">↗</span>
+<span>logi<span class="brand-accent">track</span><small>SMART DELIVERY</small></span>
+</a>
+<nav aria-label="Main navigation">
+<a href="account.html">Account</a>
+<a href="customer-dashboard.html">My packages</a>
+<a aria-current="page" class="current" href="courier-dashboard.html">Courier</a>
+<a href="dashboard.html">Admin</a>
+<button class="outline-button" id="signout" type="button">Sign out</button>
+</nav>
+</div>
+</header>
+<main class="shell account-space dashboard-space">
+<section class="panel dashboard-panel courier-dashboard-panel">
+<div class="dashboard-heading">
+<div>
+<span class="eyebrow">DELIVERY STAFF</span>
+<h1>Courier workspace</h1>
+<p>Choose your assigned shipment, share its location, and update its delivery status.</p>
+</div>
+</div>
+<p class="dashboard-status" id="live-message" role="status">Checking assignments…</p>
+<label class="dashboard-assignment" for="courier-shipments">Assigned shipment
+        <select id="courier-shipments"><option value="">Loading…</option></select>
+</label>
+<div class="account-actions dashboard-actions">
+<button class="primary-button" id="start-gps" type="button">Start GPS sharing</button>
+<button class="outline-button" disabled="" id="stop-gps" type="button">Stop sharing</button>
+<button class="outline-button" disabled="" id="mark-delivered" type="button">Mark delivered</button>
+</div>
+<div class="shipment-info" id="package-summary"></div>
+<div aria-label="Last reported shipment location map" class="tracking-map" id="gps-map"></div>
+<p class="muted dashboard-gps-note" id="gps-age"></p>
+<p class="dashboard-safety-note">Location sharing requires HTTPS or localhost and a GPS-enabled device. Sharing stops when this tab is closed or tracking is stopped. Always get the courier's permission before sharing location.</p>
+</section>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+
+<script src="assets/config.js"></script><script src="assets/firebase-app.js" type="module"></script></body>
+</html>

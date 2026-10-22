@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>My Account — LogiTrack</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="assets/style.css" rel="stylesheet"/>
+</head>
+<body class="customer-page account-page" data-page="account">
+<header class="public-header dashboard-header">
+<div class="public-nav dashboard-nav">
+<a class="brand" href="index.html">
+<span class="brand-icon">↗</span>
+<span>logi<span class="brand-accent">track</span><small>SMART DELIVERY</small></span>
+</a>
+<nav aria-label="Main navigation">
+<a href="index.html">Track a package</a>
+<a href="customer-dashboard.html">My deliveries</a>
+<a aria-current="page" class="current" href="account.html">My account</a>
+</nav>
+</div>
+</header>
+<main class="shell account-space account-profile-space">
+<section class="panel account-profile-panel">
+<div class="account-profile-heading">
+<span aria-hidden="true" class="account-avatar">↗</span>
+<div>
+<span class="eyebrow">YOUR LOGITRACK PROFILE</span>
+<h1>Welcome, <span id="account-name">Customer</span></h1>
+<p>Your account details and delivery workspace, all in one place.</p>
+</div>
+</div>
+<div aria-label="Account details" class="account-details">
+<div class="account-detail">
+<span>Email address</span>
+<strong id="account-email">Loading…</strong>
+</div>
+<div class="account-detail">
+<span>Account access</span>
+<strong class="account-role-value" id="account-role">Checking…</strong>
+</div>
+</div>
+<div class="account-message" id="message" role="status"></div>
+<section aria-labelledby="workspace-title" class="account-workspace">
+<div class="account-section-heading">
+<div>
+<h2 id="workspace-title">Your workspace</h2>
+<p>Choose where you’d like to go next.</p>
+</div>
+</div>
+<div class="account-actions account-workspace-actions">
+<a class="primary-button" href="customer-dashboard.html">My deliveries <span aria-hidden="true">→</span></a>
+<a class="outline-button" href="courier-dashboard.html">Courier GPS <span aria-hidden="true">→</span></a>
+<a class="outline-button" href="index.html">Track a package <span aria-hidden="true">→</span></a>
+<a class="outline-button" hidden="" href="dashboard.html" id="admin-link">Admin dashboard <span aria-hidden="true">→</span></a>
+</div>
+</section>
+<section aria-labelledby="access-title" class="account-access">
+<div class="account-section-heading">
+<div>
+<h2 id="access-title">More account access</h2>
+<p>Request additional access if you need it for your role.</p>
+</div>
+</div>
+<div class="account-request-actions">
+<button class="outline-button" hidden="" id="request-admin" type="button">Request admin access</button>
+<button class="outline-button" hidden="" id="request-courier" type="button">Request courier access</button>
+<span class="muted" id="courier-request-state"></span>
+</div>
+</section>
+<div class="account-profile-footer">
+<p class="muted">Creating an account does not automatically link shipments to your email. Ask your administrator to assign shipments to your account.</p>
+<button class="outline-button account-logout" id="account-logout" type="button">Sign out</button>
+</div>
+</section>
+</main>
+
+
+
+
+<script src="assets/config.js"></script><script src="assets/firebase-app.js" type="module"></script></body>
+</html>

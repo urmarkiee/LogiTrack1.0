@@ -1,0 +1,132 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function rolePath(uid) { return /databases/$(database)/documents/roles/$(uid); }
+    function roleIs(role) {
+      return signedIn() && exists(rolePath(request.auth.uid))
+             && get(rolePath(request.auth.uid)).data.role == role;
+    }
+    function isAdmin() { return roleIs('admin'); }
+    function isCourier() { return roleIs('courier'); }
+    function canSeeShipment(s) {
+      return isAdmin() || (signedIn() &&
+        (s.customerUid == request.auth.uid ||
+         (isCourier() && s.courierUid == request.auth.uid)));
+    }
+    function validCoordinates(d) {
+      return ((d.latitude == null && d.longitude == null) ||
+        (d.latitude is number && d.longitude is number &&
+         d.latitude >= -90 && d.latitude <= 90 &&
+         d.longitude >= -180 && d.longitude <= 180));
+    }
+    function validStatus(s) { return s in ['Pending','In Transit','Out for Delivery','Delivered']; }
+
+    match /users/{uid} {
+      allow get: if signedIn() && (uid == request.auth.uid || isAdmin());
+      allow list: if isAdmin();
+      allow create: if signedIn() && uid == request.auth.uid &&
+        request.auth.token.email is string &&
+        request.resource.data.email == request.auth.token.email &&
+        request.resource.data.keys().hasOnly(['email','displayName','createdAt']) &&
+        request.resource.data.displayName is string &&
+        request.resource.data.displayName.size() <= 100;
+      allow update: if signedIn() && uid == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName','updatedAt']) &&
+        request.resource.data.email == resource.data.email;
+      allow delete: if false;
+    }
+
+    match /roles/{uid} {
+      allow get: if signedIn() && (uid == request.auth.uid || isAdmin());
+      allow list: if isAdmin();
+      // New accounts may only create CUSTOMER role; no self-promotion.
+      allow create: if isAdmin() || (
+        signedIn() && uid == request.auth.uid &&
+        request.resource.data.keys().hasOnly(['role']) &&
+        request.resource.data.role == 'customer'
+      );
+      allow update: if isAdmin() && request.resource.data.keys().hasOnly(['role'])
+        && request.resource.data.role in ['customer','courier','admin'];
+      allow delete: if false;
+    }
+
+    match /roleRequests/{uid} {
+      allow get: if signedIn() && (uid == request.auth.uid || isAdmin());
+      allow list: if isAdmin();
+      allow create: if signedIn() && uid == request.auth.uid &&
+        get(rolePath(uid)).data.role == 'customer' &&
+        request.resource.data.keys().hasOnly(['userId','requestedRole','status','requestedAt']) &&
+        request.resource.data.userId == uid &&
+        request.resource.data.requestedRole in ['admin','courier'] &&
+        request.resource.data.status == 'pending';
+      allow update: if isAdmin() &&
+        request.resource.data.userId == resource.data.userId &&
+        request.resource.data.requestedRole == resource.data.requestedRole &&
+        resource.data.status == 'pending' &&
+        request.resource.data.status in ['approved','rejected']
+        || (
+          signedIn() && uid == request.auth.uid &&
+          resource.data.status == 'rejected' &&
+          get(rolePath(uid)).data.role == 'customer' &&
+          request.resource.data.keys().hasOnly(['userId','requestedRole','status','requestedAt','reviewedAt']) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['requestedRole','status','requestedAt']) &&
+          request.resource.data.userId == uid &&
+          request.resource.data.requestedRole in ['admin','courier'] &&
+          request.resource.data.status == 'pending'
+        );
+      allow delete: if false;
+    }
+
+    match /shipments/{shipmentId} {
+      allow get, list: if canSeeShipment(resource.data);
+      allow create: if isAdmin() &&
+        request.resource.data.id == shipmentId &&
+        request.resource.data.trackingNumber.matches('^PKG-[0-9A-F]{18}$') &&
+        request.resource.data.status == 'Pending' &&
+        request.resource.data.customerUid == null &&
+        request.resource.data.courierUid == null &&
+        validCoordinates(request.resource.data);
+      allow update: if isAdmin() || (
+        isCourier() &&
+        resource.data.courierUid == request.auth.uid &&
+        resource.data.status in ['In Transit','Out for Delivery'] &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['latitude','longitude','status','history','updatedAt']) &&
+        request.resource.data.updatedAt == request.time &&
+        validCoordinates(request.resource.data) &&
+        request.resource.data.status in [resource.data.status,'Delivered'] &&
+        (request.resource.data.status != 'Delivered' ||
+          (request.resource.data.latitude == null && request.resource.data.longitude == null)) &&
+        (request.resource.data.status != 'Delivered' ||
+          request.resource.data.history.size() == resource.data.history.size() + 1)
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /publicTracking/{trackingNumber} {
+      // Lookup is intentionally get-only. Tracking numbers are random lookup secrets.
+      allow get: if true;
+      allow list: if false;
+      allow create: if isAdmin() &&
+        request.resource.data.keys().hasOnly(['trackingNumber','shipmentId','itemName','origin','destination','status','location','latitude','longitude','updatedAt','history']) &&
+        request.resource.data.trackingNumber == trackingNumber;
+      allow update: if isAdmin() || (
+        isCourier() &&
+        request.resource.data.trackingNumber == trackingNumber &&
+        request.resource.data.shipmentId == resource.data.shipmentId &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['latitude','longitude','status','history','updatedAt']) &&
+        getAfter(/databases/$(database)/documents/shipments/$(resource.data.shipmentId)).data.courierUid == request.auth.uid &&
+        getAfter(/databases/$(database)/documents/shipments/$(resource.data.shipmentId)).data.status == request.resource.data.status &&
+        getAfter(/databases/$(database)/documents/shipments/$(resource.data.shipmentId)).data.latitude == request.resource.data.latitude &&
+        getAfter(/databases/$(database)/documents/shipments/$(resource.data.shipmentId)).data.longitude == request.resource.data.longitude &&
+        getAfter(/databases/$(database)/documents/shipments/$(resource.data.shipmentId)).data.history == request.resource.data.history &&
+        request.resource.data.updatedAt == request.time
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /{document=**} { allow read, write: if false; }
+  }
+}

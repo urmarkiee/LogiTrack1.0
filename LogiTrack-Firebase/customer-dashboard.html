@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Customer Dashboard • LogiTrack</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="assets/style.css" rel="stylesheet"/>
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+</head>
+<body class="customer-page dashboard-page">
+<header class="public-header dashboard-header">
+<div class="public-nav dashboard-nav">
+<a class="brand" href="index.html">
+<span class="brand-icon">↗</span>
+<span>logi<span class="brand-accent">track</span><small>SMART DELIVERY</small></span>
+</a>
+<nav aria-label="Main navigation">
+<a href="account.html">Account</a>
+<a aria-current="page" class="current" href="customer-dashboard.html">My packages</a>
+<a href="courier-dashboard.html">Courier</a>
+<a href="dashboard.html">Admin</a>
+<button class="outline-button" id="signout" type="button">Sign out</button>
+</nav>
+</div>
+</header>
+<main class="shell account-space dashboard-space">
+<section class="panel dashboard-panel customer-dashboard-panel">
+<div class="dashboard-heading">
+<div>
+<span class="eyebrow">CUSTOMER SPACE</span>
+<h1>My deliveries</h1>
+<p>Track your packages and see the latest location shared by your delivery team.</p>
+</div>
+</div>
+<p class="dashboard-status" id="live-message" role="status">Connecting…</p>
+<div class="mini-stats">
+<div><strong id="count-total">0</strong><small>My shipments</small></div>
+<div><strong id="count-active">0</strong><small>On the way</small></div>
+<div><strong id="count-done">0</strong><small>Delivered</small></div>
+</div>
+<div class="field-grid dashboard-package-picker">
+<label for="customer-shipments">Choose a package
+          <select id="customer-shipments"><option value="">Loading…</option></select>
+</label>
+<button class="outline-button" id="reload" type="button">Refresh packages</button>
+</div>
+<div class="shipment-info" id="package-summary"></div>
+<div aria-label="Last reported package location map" class="tracking-map" id="gps-map"></div>
+<p class="muted dashboard-gps-note" id="gps-age"></p>
+</section>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+
+<script src="assets/config.js"></script><script src="assets/firebase-app.js" type="module"></script></body>
+</html>
