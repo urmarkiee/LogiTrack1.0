@@ -67,8 +67,11 @@ For a complete migration preserving shipment-history timestamps and user relatio
 
 ### Deployment and security
 
-- For GitHub Pages, upload all website files (not private service credentials) and add your hosted domain to **Firebase Authentication → Authorized domains**.
-- Firebase Web App `apiKey` is a public client identifier; database protection relies on the `firestore.rules` file and Firebase Authentication.
+- Public browser code (HTML, CSS, JavaScript) and Firebase Web App configuration are visible to visitors; a public website cannot keep them secret. The Firebase Web App `apiKey` is a public identifier, not a password or service-account key. Minifying or moving it to another frontend file does not make it secret.
+- Restrict the Firebase browser API key in Google Cloud Console → **APIs & Services → Credentials** to HTTP referrers for the site. For this GitHub Pages deployment, allow `https://urmarkiee.github.io/*`; keep localhost entries only while needed for development. This limits where the key can normally be used, but does not hide it or replace backend security.
+- In Firebase Console → **Authentication → Settings → Authorized domains**, add `urmarkiee.github.io` so sign-in works on GitHub Pages.
+- Never put service-account JSON, private keys, or other server credentials in this repository or browser code. Use a trusted backend such as Cloud Functions or Cloud Run for operations that require secrets.
 - Do not grant `admin` or `courier` by choosing a signup option. New users are customers until approved.
+- Firestore protection depends on the restrictive `firestore.rules` and Firebase Authentication, not on hiding the Web API key.
 - Test all Firestore rules (ideally in Firebase Emulator Suite) before real customer use. Frontend files passed local JavaScript syntax checks; live Firebase integration has not been exercised in your project.
 - Firestore usage, Auth email limits, and map tile availability depend on the providers and account plans.
